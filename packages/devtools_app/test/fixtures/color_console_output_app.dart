@@ -10,8 +10,10 @@ import 'package:ansicolor/ansicolor.dart';
 void main() {
   // Start paused to avoid race conditions getting the initial output from the
   // console.
-  developer.debugger();
+//  developer.debugger();
   print('starting ansi color app');
+  int i = 0;
+  Timer.periodic(const Duration(milliseconds: 1000), (timer) {
 
   // Print out text exercising a wide range of ansi color styles.
   final sb = StringBuffer();
@@ -70,8 +72,6 @@ void main() {
   print(sb.toString());
 
   // Keep the app running indefinitely printing additional messages.
-  int i = 0;
-  Timer.periodic(const Duration(milliseconds: 1000), (timer) {
     print('Message ${i++}');
   });
 }
