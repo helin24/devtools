@@ -23,6 +23,7 @@ import 'src/shared/primitives/url_utils.dart';
 import 'src/shared/primitives/utils.dart';
 
 void main() async {
+  print('helin24 debug: runDevTools');
   await runDevTools();
 }
 
@@ -33,8 +34,10 @@ Future<void> runDevTools({
   // Before switching to URL path strategy, check if this URL is in the legacy
   // fragment format and redirect if necessary.
   if (_handleLegacyUrl()) return;
+  print('helin24 debug: after _handleLegacyUrl');
 
   usePathUrlStrategy();
+  print('helin24 debug: after usePathUrlStrategy');
 
   // This may be set to true from our Flutter integration tests. Since we call
   // [runDevTools] from Dart code, we cannot set the 'enable_experiments'
@@ -43,6 +46,7 @@ Future<void> runDevTools({
     setEnableExperiments();
   }
 
+  print('helin24 debug: after shouldEnableExperiments check');
   // Initialize the framework before we do anything else, otherwise the
   // StorageController won't be initialized and preferences won't be loaded.
   await initializeFramework();
@@ -82,10 +86,12 @@ Future<void> runDevTools({
 /// initialization should be skipped.
 bool _handleLegacyUrl() {
   final url = getWebUrl();
+  print('helin24 debug: url is $url');
   if (url == null) return false;
 
   final newUrl = mapLegacyUrl(url);
   if (newUrl != null) {
+    print('helin24 debug: newUrl is $newUrl');
     webRedirect(newUrl);
     return true;
   }
