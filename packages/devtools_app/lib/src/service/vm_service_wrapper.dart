@@ -1034,6 +1034,22 @@ class VmServiceWrapper implements VmService {
     return localFuture;
   }
 
+  Future<Success> startDebugAdapter() {
+    if (_ddsSupported) {
+      print('dds supports this');
+      return _vmService.startDebugAdapter();
+    }
+    return Future.value(null);
+  }
+
+  Future<DapResponse> handleDap(String message) {
+    if (_ddsSupported) {
+      print('dds supports this');
+      return _vmService.handleDap(message);
+    }
+    return Future.value(null);
+  }
+
   /// Adds support for private VM RPCs that can only be used when VM developer
   /// mode is enabled. Not for use outside of VM developer pages.
   /// Allows callers to invoke extension methods for private RPCs. This should

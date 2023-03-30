@@ -190,14 +190,25 @@ class ServiceConnectionManager {
     VmServiceWrapper service, {
     required Future<void> onClosed,
   }) async {
+    print('in vmServiceOpened');
     if (service == this.service) {
       // Service already opened.
       return;
     }
+
+    // Getting and setting a variable should not count as repeated references.
+    // ignore: prefer-moving-to-variable
     this.service = service;
     if (_serviceAvailable.isCompleted) {
       _serviceAvailable = Completer();
     }
+
+    print('about to try handle');
+    const setBreakpointsMessage =
+        '{"command":"setBreakpoints","arguments":{"source":{"name":"main.dart","path":"/google/src/cloud/helinx/head/google3/mobile/flutter/samples/hello_flutter/app/lib/main.dart"},"lines":[80,84],"breakpoints":[{"line":80},{"line":84}],"sourceModified":false},"type":"request","seq":1}';
+    final handleResult = await this.service?.handleDap(setBreakpointsMessage);
+    print('handle dap result');
+    print(handleResult?.message);
 
     connectedApp = ConnectedApp();
 
