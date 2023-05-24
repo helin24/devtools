@@ -1034,13 +1034,13 @@ class VmServiceWrapper implements VmService {
     return localFuture;
   }
 
-  Future<Success> startDebugAdapter() {
-    if (_ddsSupported) {
-      print('dds supports this');
-      return _vmService.startDebugAdapter();
-    }
-    return Future.value(null);
-  }
+  // Future<Success> startDebugAdapter() {
+  //   if (_ddsSupported) {
+  //     print('dds supports this');
+  //     return _vmService.startDebugAdapter();
+  //   }
+  //   return Future.value(null);
+  // }
 
   Future<DapResponse> handleDap(String message) {
     if (_ddsSupported) {
