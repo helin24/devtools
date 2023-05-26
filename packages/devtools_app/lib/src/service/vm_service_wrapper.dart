@@ -10,6 +10,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:dds_service_extensions/dds_service_extensions.dart';
+import 'package:dds_service_extensions/src/dap.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:vm_service/vm_service.dart';
@@ -1045,7 +1046,7 @@ class VmServiceWrapper implements VmService {
   Future<DapResponse> handleDap(String message) {
     if (_ddsSupported) {
       print('dds supports this');
-      return _vmService.handleDap(message);
+      return _vmService.sendDapRequest(message);
     }
     return Future.value(null);
   }

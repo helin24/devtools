@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:core';
 
 import 'package:collection/collection.dart';
+import 'package:dap/dap.dart' as dap;
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:vm_service/vm_service.dart' hide Error;
@@ -203,12 +205,29 @@ class ServiceConnectionManager {
       _serviceAvailable = Completer();
     }
 
+    final dapRequest = dap.Request(
+      command: 'setBreakpoints',
+      seq: 0,
+      arguments: dap.SetBreakpointsArguments(
+        source: dap.Source(
+          name: 'main.dart',
+          path:
+              '/google/src/cloud/helinx/head/google3/mobile/flutter/samples/hello_flutter/app/lib/main.dart',
+        ),
+        lines: [80, 84],
+        breakpoints: [
+          dap.SourceBreakpoint(line: 80),
+          dap.SourceBreakpoint(line: 84)
+        ],
+        sourceModified: false,
+      ),
+    );
+    final strEncoded = jsonEncode(dapRequest);
     print('about to try handle');
-    const setBreakpointsMessage =
-        '{"command":"setBreakpoints","arguments":{"source":{"name":"main.dart","path":"/google/src/cloud/helinx/head/google3/mobile/flutter/samples/hello_flutter/app/lib/main.dart"},"lines":[80,84],"breakpoints":[{"line":80},{"line":84}],"sourceModified":false},"type":"request","seq":1}';
-    final handleResult = await this.service?.handleDap(setBreakpointsMessage);
+    print(strEncoded);
+    final handleResult = await this.service?.handleDap(strEncoded);
     print('handle dap result');
-    print(handleResult?.message);
+    print(handleResult?.dapResponse.body);
 
     connectedApp = ConnectedApp();
 
