@@ -9,6 +9,7 @@ library vm_service_wrapper;
 import 'dart:async';
 
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:dds_service_extensions/dap.dart';
 import 'package:dds_service_extensions/dds_service_extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
@@ -483,6 +484,8 @@ class VmServiceWrapper implements VmService {
 
   @override
   Stream<Event> get onDebugEvent => _vmService.onDebugEvent;
+  @override
+  Stream<Event> get onDAPEvent => _vmService.onDAPEvent;
 
   @override
   Stream<Event> get onProfilerEvent => _vmService.onProfilerEvent;
@@ -1032,6 +1035,22 @@ class VmServiceWrapper implements VmService {
       onError: (error) => futureComplete(),
     );
     return localFuture;
+  }
+
+  // Future<Success> startDebugAdapter() {
+  //   if (_ddsSupported) {
+  //     print('dds supports this');
+  //     return _vmService.startDebugAdapter();
+  //   }
+  //   return Future.value(null);
+  // }
+
+  Future<DapResponse> handleDap(String message) {
+    if (_ddsSupported) {
+      print('dds supports this');
+      return _vmService.sendDapRequest(message);
+    }
+    return Future.value(null);
   }
 
   /// Adds support for private VM RPCs that can only be used when VM developer

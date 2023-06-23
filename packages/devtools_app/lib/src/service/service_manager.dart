@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:core';
 
 import 'package:collection/collection.dart';
+import 'package:dap/dap.dart' as dap;
+import 'package:dds_service_extensions/dap.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:vm_service/vm_service.dart' hide Error;
@@ -190,10 +193,14 @@ class ServiceConnectionManager {
     VmServiceWrapper service, {
     required Future<void> onClosed,
   }) async {
+    print('in vmServiceOpened');
     if (service == this.service) {
       // Service already opened.
       return;
     }
+
+    // Getting and setting a variable should not count as repeated references.
+    // ignore: prefer-moving-to-variable
     this.service = service;
     if (_serviceAvailable.isCompleted) {
       _serviceAvailable = Completer();
@@ -216,6 +223,30 @@ class ServiceConnectionManager {
     // This needs to be called last in the above group of `vmServiceOpened`
     // calls.
     errorBadgeManager.vmServiceOpened(service);
+
+    final dapRequest = dap.Request(
+      command: 'setBreakpoints',
+      seq: 0,
+      arguments: dap.SetBreakpointsArguments(
+        source: dap.Source(
+          name: 'main.dart',
+          path:
+              '/google/src/cloud/helinx/head/google3/mobile/flutter/samples/hello_flutter/app/lib/main.dart',
+        ),
+        lines: [80, 84],
+        breakpoints: [
+          dap.SourceBreakpoint(line: 80),
+          dap.SourceBreakpoint(line: 84)
+        ],
+        sourceModified: false,
+      ),
+    );
+    final strEncoded = jsonEncode(dapRequest);
+    print('about to try handle');
+    print(strEncoded);
+    final handleResult = await this.service?.handleDap(strEncoded);
+    print('handle dap result');
+    print(handleResult?.dapResponse.body);
 
     if (debugLogServiceProtocolEvents) {
       serviceTrafficLogger = VmServiceTrafficLogger(service);
@@ -277,6 +308,7 @@ class ServiceConnectionManager {
 
     final streamIds = [
       EventStreams.kDebug,
+      DapEventStreams.kDAP,
       EventStreams.kExtension,
       EventStreams.kGC,
       EventStreams.kIsolate,
@@ -332,6 +364,10 @@ class ServiceConnectionManager {
     }
 
     _connectionAvailableController.add(service);
+
+    print('about to try handle again');
+    final handleResult2 = await this.service?.handleDap(strEncoded);
+    print(handleResult2?.dapResponse.body);
   }
 
   void manuallyDisconnect() {
