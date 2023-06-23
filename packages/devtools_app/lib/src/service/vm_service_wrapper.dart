@@ -9,8 +9,8 @@ library vm_service_wrapper;
 import 'dart:async';
 
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:dds_service_extensions/dap.dart';
 import 'package:dds_service_extensions/dds_service_extensions.dart';
-import 'package:dds_service_extensions/src/dap.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:vm_service/vm_service.dart';
@@ -484,6 +484,8 @@ class VmServiceWrapper implements VmService {
 
   @override
   Stream<Event> get onDebugEvent => _vmService.onDebugEvent;
+  @override
+  Stream<Event> get onDAPEvent => _vmService.onDAPEvent;
 
   @override
   Stream<Event> get onProfilerEvent => _vmService.onProfilerEvent;

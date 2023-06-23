@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:core';
 
+import 'package:dds_service_extensions/dap.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:vm_service/vm_service.dart' hide Error;
@@ -89,6 +90,7 @@ class ServiceExtensionManager extends Disposer {
   }
 
   Future<void> _handleDebugEvent(Event event) async {
+    _log.shout('in handleDebugEvent');
     if (event.kind == EventKind.kResume) {
       final isolateRef = event.isolate!;
       final callbacks = _callbacksOnIsolateResume[isolateRef] ?? [];
@@ -101,6 +103,12 @@ class ServiceExtensionManager extends Disposer {
         }
       }
     }
+  }
+
+  Future<void> _handleDapEvent(Event event) async {
+    _log.shout('in handleDapEvent');
+    print(event.data);
+    print(event.dapData.toJson());
   }
 
   Future<void> _updateServiceExtensionForStateChange(
@@ -540,6 +548,9 @@ class ServiceExtensionManager extends Disposer {
     addAutoDisposeListener(_isolateManager.mainIsolate, _onMainIsolateChanged);
     autoDisposeStreamSubscription(
       service.onDebugEvent.listen(_handleDebugEvent),
+    );
+    autoDisposeStreamSubscription(
+      service.onDAPEvent.listen(_handleDapEvent),
     );
     autoDisposeStreamSubscription(
       service.onIsolateEvent.listen(_handleIsolateEvent),

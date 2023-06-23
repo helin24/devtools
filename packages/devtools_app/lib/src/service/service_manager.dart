@@ -8,6 +8,7 @@ import 'dart:core';
 
 import 'package:collection/collection.dart';
 import 'package:dap/dap.dart' as dap;
+import 'package:dds_service_extensions/dap.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:vm_service/vm_service.dart' hide Error;
@@ -205,6 +206,24 @@ class ServiceConnectionManager {
       _serviceAvailable = Completer();
     }
 
+    connectedApp = ConnectedApp();
+
+    _appState?.dispose();
+    _appState = AppState(isolateManager.selectedIsolate);
+
+    // It is critical we call vmServiceOpened on each manager class before
+    // performing any async operations. Otherwise, we may get end up with
+    // race conditions where managers cannot listen for events soon enough.
+    isolateManager.vmServiceOpened(service);
+    consoleService.vmServiceOpened(service);
+    serviceExtensionManager.vmServiceOpened(service, connectedApp!);
+    resolvedUriManager.vmServiceOpened();
+    await vmFlagManager.vmServiceOpened(service);
+    timelineStreamManager.vmServiceOpened(service, connectedApp!);
+    // This needs to be called last in the above group of `vmServiceOpened`
+    // calls.
+    errorBadgeManager.vmServiceOpened(service);
+
     final dapRequest = dap.Request(
       command: 'setBreakpoints',
       seq: 0,
@@ -228,24 +247,6 @@ class ServiceConnectionManager {
     final handleResult = await this.service?.handleDap(strEncoded);
     print('handle dap result');
     print(handleResult?.dapResponse.body);
-
-    connectedApp = ConnectedApp();
-
-    _appState?.dispose();
-    _appState = AppState(isolateManager.selectedIsolate);
-
-    // It is critical we call vmServiceOpened on each manager class before
-    // performing any async operations. Otherwise, we may get end up with
-    // race conditions where managers cannot listen for events soon enough.
-    isolateManager.vmServiceOpened(service);
-    consoleService.vmServiceOpened(service);
-    serviceExtensionManager.vmServiceOpened(service, connectedApp!);
-    resolvedUriManager.vmServiceOpened();
-    await vmFlagManager.vmServiceOpened(service);
-    timelineStreamManager.vmServiceOpened(service, connectedApp!);
-    // This needs to be called last in the above group of `vmServiceOpened`
-    // calls.
-    errorBadgeManager.vmServiceOpened(service);
 
     if (debugLogServiceProtocolEvents) {
       serviceTrafficLogger = VmServiceTrafficLogger(service);
@@ -307,6 +308,7 @@ class ServiceConnectionManager {
 
     final streamIds = [
       EventStreams.kDebug,
+      DapEventStreams.kDAP,
       EventStreams.kExtension,
       EventStreams.kGC,
       EventStreams.kIsolate,
@@ -362,6 +364,10 @@ class ServiceConnectionManager {
     }
 
     _connectionAvailableController.add(service);
+
+    print('about to try handle again');
+    final handleResult2 = await this.service?.handleDap(strEncoded);
+    print(handleResult2?.dapResponse.body);
   }
 
   void manuallyDisconnect() {
